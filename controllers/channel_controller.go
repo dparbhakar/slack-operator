@@ -97,6 +97,7 @@ func (r *ChannelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return reconcilerUtil.ManageError(r.Client, channel, err, true)
 	}
 
+	log.Info("Start checking channel status")
 	if channel.Status.ID == "" {
 		name := channel.Spec.Name
 		isPrivate := channel.Spec.Private
@@ -107,13 +108,14 @@ func (r *ChannelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		if err != nil {
 			if err.Error() == "name_taken" {
 				// Check if the channel already exists and then just reconstruct the status accordingly
+				log.Info("Getting Channel by Name")
 				existingChannel, err := r.SlackService.GetChannelByName(name)
 				if err != nil {
 					return reconcilerUtil.ManageError(r.Client, channel, err, false)
 				}
 
 				if existingChannel != nil && existingChannel.GroupConversation.IsArchived {
-					err = r.SlackService.UnArchiveChannel(existingChannel)
+					err = error(nil)
 					if err != nil {
 						return reconcilerUtil.ManageError(r.Client, channel, err, false)
 					}
@@ -136,6 +138,7 @@ func (r *ChannelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		}
 		return r.updateSlackChannel(ctx, channel)
 	}
+	log.Info("Done checking channel status")
 
 	existingChannel, err := r.SlackService.GetChannel(channel.Status.ID)
 	if err != nil {
@@ -214,7 +217,8 @@ func (r *ChannelReconciler) finalizeChannel(req ctrl.Request, channel *slackv1al
 	channelID := channel.Status.ID
 	log := r.Log.WithValues("channelID", channelID)
 
-	err := r.SlackService.ArchiveChannel(channelID)
+	err := error(nil)
+	log.Info("Archiving channel is disabled")
 
 	if err != nil && err.Error() != "channel_not_found" && err.Error() != "already_archived" {
 		return reconcilerUtil.ManageError(r.Client, channel, err, false)

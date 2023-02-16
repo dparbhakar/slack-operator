@@ -192,7 +192,7 @@ func (s *SlackService) InviteUsers(channelID string, userEmails []string) []erro
 		log.V(1).Info("Inviting user to Slack Channel", "userID", user.ID)
 		_, err = s.api.InviteUsersToConversation(channelID, user.ID)
 
-		if err != nil && err.Error() != "already_in_channel" {
+		if err != nil && err.Error() != "already_in_channel" && err.Error() != "cant_invite_self" {
 			log.Error(err, "Error Inviting user to channel", "userID", user.ID)
 			errorlist = append(errorlist, err)
 		}
